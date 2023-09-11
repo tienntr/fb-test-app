@@ -149,16 +149,51 @@ static void fill_screen(struct fb_info *fb_info)
 	fb_put_string(fb_info, 20, 30, "BLUE", 4, 0xffffff, 1, 4);
 }
 
+unsigned short rgb888_to_rgb565(unsigned int color)
+{
+	unsigned b5 = (color >> 3) & 0x1f;
+	unsigned g6 = (color >> 10) & 0x3f;
+	unsigned r5 = (color >> 19) & 0x1f;
+	return b5 | (g6 << 5) | (r5 << 11);
+}
+
 void fill_screen_solid(struct fb_info *fb_info, unsigned int color)
 {
-
 	unsigned x, y;
 	unsigned h = fb_info->var.yres;
 	unsigned w = fb_info->var.xres;
+	unsigned bits_per_pixel = fb_info->var.bits_per_pixel;
+	unsigned line_length = fb_info->fix.line_length;
+	unsigned char *line = fb_info->ptr;
 
-	for (y = 0; y < h; y++) {
-		for (x = 0; x < w; x++)
-			draw_pixel(fb_info, x, y, color);
+	if (bits_per_pixel == 8) {
+		for (y = 0; y < h; y++) {
+			memset(line, color, w);
+			line += line_length;
+		}
+	} else if (bits_per_pixel == 16) {
+		unsigned short rgb565 = rgb888_to_rgb565(color);
+		for (y = 0; y < h; y++) {
+			for (x = 0; x < w; x++)
+				((unsigned short *) line)[x] = rgb565;
+			line += line_length;
+		}
+	} else if (bits_per_pixel == 24) {
+		for (y = 0; y < h; y++) {
+			unsigned char *p = line;
+			for (x = 0; x < w; x++) {
+				*p++ = color;
+				*p++ = color >> 8;
+				*p++ = color >> 16;
+			}
+			line += line_length;
+		}
+	} else {
+		for (y = 0; y < h; y++) {
+			for (x = 0; x < w; x++)
+				((unsigned int *) line)[x] = color;
+			line += line_length;
+		}
 	}
 }
 
