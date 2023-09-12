@@ -213,6 +213,9 @@ static void do_fill_screen(struct fb_info *fb_info, int pattern)
 	case 4:
 		fill_screen_solid(fb_info, 0xffffff);
 		break;
+	case 5:
+		fill_screen_solid(fb_info, 0);
+		break;
 	case 0:
 	default:
 		fill_screen(fb_info);
@@ -228,6 +231,7 @@ void show_help(void)
 	printf("      -g         = fill framebuffer with green\n");
 	printf("      -b         = fill framebuffer with blue\n");
 	printf("      -w         = fill framebuffer with white\n");
+	printf("      -k         = fill framebuffer with black\n");
 	printf("      -p pattern = fill framebuffer with pattern number\n");
 }
 
@@ -240,7 +244,7 @@ int main(int argc, char **argv)
 	printf("fb-test %d.%d.%d (%s)\n", VERSION, PATCHLEVEL, SUBLEVEL,
 		VERSION_NAME);
 
-	while ((opt = getopt(argc, argv, "hrgbwp:f:")) != -1) {
+	while ((opt = getopt(argc, argv, "hrgbwkp:f:")) != -1) {
 		switch (opt) {
 		case 'f':
 			req_fb = atoi(optarg);
@@ -259,6 +263,9 @@ int main(int argc, char **argv)
 			break;
 		case 'w':
 			req_pattern = 4;
+			break;
+		case 'k':
+			req_pattern = 5;
 			break;
 		case 'h':
 			show_help();
