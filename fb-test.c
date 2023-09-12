@@ -197,6 +197,18 @@ void fill_screen_solid(struct fb_info *fb_info, unsigned int color)
 	}
 }
 
+void fill_screen_repeated_bytes(struct fb_info *fb_info, unsigned char byte)
+{
+	unsigned char *line = fb_info->ptr;
+	// WARNING if bits_per_pixel == 32 we may write into transparency bits 
+	unsigned x_bytes = fb_info->var.bits_per_pixel / 8 * fb_info->var.xres;
+	unsigned y;
+	for (y = 0; y < fb_info->var.yres; y++) {
+		memset(line, byte, x_bytes);
+		line += fb_info->fix.line_length;
+	}
+}
+
 static void do_fill_screen(struct fb_info *fb_info, int pattern)
 {
 
@@ -211,10 +223,10 @@ static void do_fill_screen(struct fb_info *fb_info, int pattern)
 		fill_screen_solid(fb_info, 0x0000ff);
 		break;
 	case 4:
-		fill_screen_solid(fb_info, 0xffffff);
+		fill_screen_repeated_bytes(fb_info, 0xff);
 		break;
 	case 5:
-		fill_screen_solid(fb_info, 0);
+		fill_screen_repeated_bytes(fb_info, 0);
 		break;
 	case 0:
 	default:
